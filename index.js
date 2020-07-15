@@ -58,6 +58,35 @@ class MSSQL {
             throw err
         }
     }
+
+    async executeSP(sql) {
+        const pool = await this._poolConnection; // ensures that the pool has been created
+
+        try {
+            let result = null
+
+            if (typeof sql === 'string') {
+                result = await pool.request().execute(sql);
+            } else {
+                let request = pool.request()
+
+                if (sql.params) {
+                    request.inputs(sql.params)
+                }
+
+                if (typeof sql.query === 'function') {
+                    result = await request.execute(sql.execute(request, mssql));
+                } else {
+                    result = await request.execute(sql.query);
+                }
+            }
+
+            return result.recordset || [];
+        } catch (err) {
+            console.log('SQL error', err, sql.query || sql);
+            throw err
+        }
+    }
 }
 
 module.exports = MSSQL;

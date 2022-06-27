@@ -30,7 +30,7 @@ class MSSQL {
         return this._poolConnection;
     }
 
-    async execute(sql) {
+    async execute(sql, options) {
         const pool = await this._poolConnection; // ensures that the pool has been created
 
         try {
@@ -50,6 +50,10 @@ class MSSQL {
                 } else {
                     result = await request.query(sql.query);
                 }
+            }
+
+            if (options && options.returnMultipleSets) {
+                return result.recordsets || [];
             }
 
             return result.recordset || [];
